@@ -67,12 +67,11 @@ class TestSuite:
 ## TestCaseTest
 class TestCaseTest(TestCase):
     def setUp(self):
-        self.test= WasRun("testMethod")
+        self.result= TestResult()
 
     def testTemplateMethod(self):
         test= WasRun("testMethod")
-        result= TestResult()
-        test.run(result)
+        test.run(self.result)
         assert ("setUp testMethod tearDown " == test.log)
 
     def tearDown(self):
@@ -80,28 +79,24 @@ class TestCaseTest(TestCase):
 
     def testResult(self):
         test = WasRun("testMethod")
-        result= TestResult()
-        test.run(result)
+        test.run(self.result)
         assert ("1 run, 0 failed" == result.summary())
 
     def testFailedResult(self):
         test= WasRun("testBrokenMethod")
-        result= TestResult()
-        test.run(result)
+        test.run(self.result)
         assert ("1 run, 1 failed" == result.summary())
 
     def testFailedResultFormatting(self):
-        result= TestResult()
-        result.testStarted()    ## 테스트가 시작할 때 보낼 메시지
-        result.testFailed()     ## 테스트가 실패할 때 보낼 메시지
+        self.result.testStarted()    ## 테스트가 시작할 때 보낼 메시지
+        self.result.testFailed()     ## 테스트가 실패할 때 보낼 메시지
         assert ("1 run, 1 failed" == result.summary())
 
     def testSuite(self):
         suite= TestSuite()
         suite.add(WasRun("testMethod"))
         suite.add(WasRun("testBrokenMethod"))
-        result= TestResult()
-        suite.run(result)
+        suite.run(self.result)
         assert ("2 run, 1 failed" == result.summary())
 
 suite= TestSuite()
