@@ -6,8 +6,7 @@ class TestCase:
     def setUp(self):
         pass
 
-    def run(self):
-        result= TestResult()
+    def run(self, result):
         result.testStarted()
         self.setUp()
         try:
@@ -16,7 +15,6 @@ class TestCase:
         except:
             result.testFailed()
         self.tearDown()
-        return result
 
 ## WasRun
 class WasRun(TestCase):
@@ -54,6 +52,18 @@ class TestResult:
     def summary(self):
         return "%d run, %d failed" % (self.runCount, self.failureCount)
 
+## TestSuite
+class TestSuite:
+    def __init__(self):
+        self.tests= []      ## 빈 컬렉션 생성
+
+    def add(self, test):
+        self.tests.append(test)
+
+    def run(self, result):
+        for test in self.tests:
+            test.run(result)
+
 ## TestCaseTest
 class TestCaseTest(TestCase):
     def setUp(self):
@@ -61,7 +71,8 @@ class TestCaseTest(TestCase):
 
     def testTemplateMethod(self):
         test= WasRun("testMethod")
-        test.run()
+        result= TestResult()
+        test.run(result)
         assert ("setUp testMethod tearDown " == test.log)
 
     def tearDown(self):
@@ -69,18 +80,36 @@ class TestCaseTest(TestCase):
 
     def testResult(self):
         test = WasRun("testMethod")
-        result= test.run()
+        result= TestResult()
+        test.run(result)
         assert ("1 run, 0 failed" == result.summary())
 
     def testFailedResult(self):
         test= WasRun("testBrokenMethod")
-        result= test.run()
+        result= TestResult()
+        test.run(result)
         assert ("1 run, 1 failed" == result.summary())
 
-    def testFailResultPormatting(self):
+    def testFailedResultFormatting(self):
         result= TestResult()
         result.testStarted()    ## 테스트가 시작할 때 보낼 메시지
         result.testFailed()     ## 테스트가 실패할 때 보낼 메시지
         assert ("1 run, 1 failed" == result.summary())
 
-TestCaseTest("testTemplateMethod").run()
+    def testSuite(self):
+        suite= TestSuite()
+        suite.add(WasRun("testMethod"))
+        suite.add(WasRun("testBrokenMethod"))
+        result= TestResult()
+        suite.run(result)
+        assert ("2 run, 1 failed" == result.summary())
+
+suite= TestSuite()
+suite.add(TestCaseTest("testTemplateMethod"))
+suite.add(TestCaseTest("testResult"))
+suite.add(TestCaseTest("testFailedResultFormatting"))
+suite.add(TestCaseTest("testFailedResult"))
+suite.add(TestCaseTest("testSuite"))
+result= TestResult()
+suite.run(result)
+print(result.summary())
